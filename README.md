@@ -1,217 +1,142 @@
-# ⚡ PulseBoard — Personalized Content Dashboard
+<div align="center">
 
-A modern, high-performance, responsive SaaS dashboard where users discover personalized news, movie recommendations, and developer community posts in a unified interface.
+# ⚡ PulseBoard
+### Personalized Content Dashboard
 
-Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS v4**, **Redux Toolkit**, **RTK Query**, **Framer Motion**, and **dnd-kit**.
+A modern, high-performance, responsive SaaS dashboard aggregating curated news, cinema recommendations (TMDB), and developer community discussions into a unified, interactive workspace.
 
----
+[![Next.js](https://img.shields.io/badge/Next.js-16.4.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.0-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Playwright](https://img.shields.io/badge/Playwright-E2E_Passed-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-38_Tests_Passed-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 
-## 📑 Table of Contents
-
-1. [📋 SDE Intern Assignment Requirements Compliance](#-sde-intern-assignment-requirements-compliance)
-2. [💡 Quick Engineering Walkthrough (The 2-Minute Pitch)](#-quick-engineering-walkthrough-the-2-minute-pitch)
-   - [The 30-Second Elevator Pitch](#the-30-second-elevator-pitch)
-   - [How Data Flows End-to-End](#how-data-flows-end-to-end)
-   - [5 Key Technical Decisions & Why They Were Made](#5-key-technical-decisions--why-they-were-made)
-3. [🌟 Architectural Overview & How Things Work](#-architectural-overview--how-things-work)
-   - [Next.js App Router & Hybrid Rendering](#nextjs-app-router--hybrid-rendering)
-   - [State Management Pipeline (Redux Toolkit)](#state-management-pipeline-redux-toolkit)
-   - [RTK Query Caching & Revalidation](#rtk-query-caching--revalidation)
-   - [Hydration & Persistence Lifecycle](#hydration--persistence-lifecycle)
-   - [Drag-and-Drop Reordering Engine](#drag-and-drop-reordering-engine)
-   - [Theme Engine & Dynamic Styling](#theme-engine--dynamic-styling)
-4. [🔌 API Architecture & Endpoints](#-api-architecture--endpoints)
-   - [API Endpoint Reference](#api-endpoint-reference)
-   - [Live API Proxy vs. Graceful Mock Fallbacks](#live-api-proxy-vs-graceful-mock-fallbacks)
-   - [Content Normalization Schema](#content-normalization-schema)
-5. [✨ Comprehensive Feature Guide](#-comprehensive-feature-guide)
-   - [Three-Column SaaS Layout](#three-column-saas-layout)
-   - [Editorial Hero Banner & Cinema Strip](#editorial-hero-banner--cinema-strip)
-   - [Unified Content Cards (News, Movies, Social)](#unified-content-cards-news-movies-social)
-   - [Debounced Real-Time Search](#debounced-real-time-search)
-   - [Favorites & Bookmarks Suite (`/favorites`)](#favorites--bookmarks-suite-favorites)
-   - [Trending Hub (`/trending`)](#trending-hub-trending)
-   - [User Preferences & Diagnostics (`/settings`)](#user-preferences--diagnostics-settings)
-   - [Notification Center & Toast System](#notification-center--toast-system)
-   - [Responsive Mobile Drawer](#responsive-mobile-drawer)
-6. [🧪 Testing & Verification Matrix](#-testing--verification-matrix)
-7. [🛠️ Technology Stack](#️-technology-stack)
-8. [🚀 Setup & Installation Guide](#-setup--installation-guide)
-9. [🚢 Vercel Deployment Guide](#-vercel-deployment-guide)
+[Features](#-key-features) • [Assignment Compliance](#-sde-intern-assignment-compliance) • [Architecture](#-system-architecture--how-it-works) • [API Layer](#-api-architecture--proxy-layer) • [Testing](#-testing--quality-assurance-matrix) • [Quickstart](#-getting-started--local-setup)
 
 ---
 
-## 📋 SDE Intern Assignment Requirements Compliance
+</div>
 
-| # | Requirement Category | Assignment Specification | Implementation in PulseBoard | Status |
+## 🌟 Executive Overview
+
+**PulseBoard** was engineered for the **Software Development Engineer (SDE) Intern Frontend Assignment**. It demonstrates production-grade frontend architecture, robust state management, resilient API handling with offline fallbacks, accessible user-centric UI design, and comprehensive automated test coverage.
+
+### Core Highlights
+- **Editorial 3-Column SaaS Interface**: Left collapsible navigation with topic capsules, center feed with cinematic hero banner and horizontal cinema strip, and right sidebar featuring top 5 trending rankings and live bookmark management.
+- **Unified Multi-Source Aggregator**: Ingests disparate APIs (World/Tech News, The Movie Database (TMDB), and Community Social Pulse) into a single, strongly-typed normalization schema (`UnifiedContentItem`).
+- **Interactive Drag-and-Drop Feed**: Fluid card reordering powered by `@dnd-kit/sortable` with hardware-accelerated CSS transforms and automatic `localStorage` persistence.
+- **Resilient Zero-Crash Fallback Engine**: If external API keys (`TMDB_API_KEY`, `NEWS_API_KEY`) are omitted, rate-limited, or offline, internal proxies gracefully degrade to curated high-definition datasets without breaking the user experience.
+- **SSR Hydration Safety Bridge**: Utilizes React 19's native `useSyncExternalStore` for client-side storage hydration, guaranteeing 0 hydration mismatches and strict ESLint compliance.
+- **Complete Test Matrix**: 38 unit tests (Vitest) covering reducers, storage, hooks, and components, alongside 6 automated browser user journeys (Playwright Chromium) and 0-error TypeScript checks.
+
+---
+
+## 📋 SDE Intern Assignment Compliance
+
+This project satisfies all requirements and bonus criteria specified in the assignment brief:
+
+| # | Assignment Requirement | Implementation in PulseBoard | File Reference | Status |
 |---|---|---|---|---|
-| **1** | **Personalized Feed** | User preferences for categories (Technology, Sports, Finance, etc.) saved in local storage or Redux. | Configurable in `/settings` & sidebar topic pills; persisted to Redux + localStorage. | ✅ Complete |
-| **1** | **Multi-API Fetching** | Fetch from 2+ APIs: News API, Recommendations (TMDB / Spotify), and Social API (hashtags/profiles). | Built `/api/news`, `/api/movies` (TMDB), `/api/social` with live proxies + automatic mock fallbacks. | ✅ Complete |
-| **1** | **Interactive Cards** | Images, headlines, descriptions, CTA buttons ("Read More"), and pagination / infinite scrolling. | `ContentCard.tsx` with images, type badges, external links, and "Load More Content" pagination. | ✅ Complete |
-| **2** | **Dashboard Layout** | Responsive layout with navigation sidebar, top header, search bar, user settings, account info. | 3-column layout (`Sidebar.tsx`, `TopNav.tsx`, `RightSidebar.tsx`, `MobileNav.tsx`). | ✅ Complete |
-| **2** | **Feed Sections** | Unified Feed, Trending Section, and Favorites Section. | Unified SortableFeed, Trending Now 1–5 + `/trending`, and Favorites sidebar + `/favorites`. | ✅ Complete |
-| **3** | **Search Functionality** | Cross-category search bar with debounced input to optimize performance while typing. | Sticky search bar in `TopNav` using custom `useDebounce` hook (300ms delay) + instant clear button. | ✅ Complete |
-| **4** | **Drag-and-Drop** | Reorder cards in feed with smooth interaction. | `@dnd-kit/core` & `@dnd-kit/sortable` with custom grip handle, transform transitions, and saved order. | ✅ Complete |
-| **4** | **Dark Mode & Styling** | Dark mode toggle using CSS custom properties & Tailwind CSS. | Sun/moon toggle in TopNav + Settings segmented control using CSS variables and `.dark` class. | ✅ Complete |
-| **4** | **Animations** | Smooth transitions between sections, loading spinners, card hover effects. | Framer Motion transitions in HeroBanner, hover scaling, skeleton shimmer loaders, toast alerts. | ✅ Complete |
-| **5** | **State Management** | Redux Toolkit for global state, RTK Query / Thunks for async, localStorage persistence. | Redux Toolkit store with 3 modular slices, RTK Query cache invalidation, SSR-safe `useSyncExternalStore`. | ✅ Complete |
-| **6** | **Testing Suite** | Unit tests, Integration tests (edge cases, empty/error states), E2E tests (Playwright/Cypress). | 38 Vitest unit tests, FeedbackStates tests, 6 Playwright automated browser tests. | ✅ Complete |
-| **7** | **Bonus Features** | User profile/mock auth, real-time data polling, bookmark export, integration health. | User profile chip, auto-refresh interval selector, JSON exporter, `/api/status` diagnostics. | ✅ Complete |
+| **1.1** | **User Preferences** | User-configurable category preferences (Technology, Business, Sports, Entertainment, etc.) with persistent storage. | [`preferencesSlice.ts`](file:///c:/pulseboard/features/preferences/preferencesSlice.ts)<br>[`settings/page.tsx`](file:///c:/pulseboard/app/settings/page.tsx) | ✅ **Complete** |
+| **1.2** | **News API Integration** | Category-based news wire integration with source badges, read time, and fallback datasets. | [`app/api/news/route.ts`](file:///c:/pulseboard/app/api/news/route.ts)<br>[`lib/news.ts`](file:///c:/pulseboard/lib/news.ts) | ✅ **Complete** |
+| **1.3** | **Recommendations API** | TMDB API v3 integration providing movie recommendations, ratings, posters, and release years. | [`app/api/movies/route.ts`](file:///c:/pulseboard/app/api/movies/route.ts)<br>[`lib/tmdb.ts`](file:///c:/pulseboard/lib/tmdb.ts) | ✅ **Complete** |
+| **1.4** | **Social Media API** | Hashtag-driven social feed with author avatars, handles, like counters, and engagement metrics. | [`app/api/social/route.ts`](file:///c:/pulseboard/app/api/social/route.ts)<br>[`lib/social.ts`](file:///c:/pulseboard/lib/social.ts) | ✅ **Complete** |
+| **1.5** | **Interactive Cards** | Unified card presentation with images, headlines, synopsis, type capsules, and CTA buttons. | [`ContentCard.tsx`](file:///c:/pulseboard/components/cards/ContentCard.tsx) | ✅ **Complete** |
+| **1.6** | **Pagination / Infinite Scroll** | Chunked pagination and "Load More Content" action across all sources. | [`FeedList.tsx`](file:///c:/pulseboard/components/feed/FeedList.tsx) | ✅ **Complete** |
+| **2.1** | **Dashboard Layout** | 3-column desktop layout with sidebar navigation, sticky header, search bar, and account info. | [`DashboardShell.tsx`](file:///c:/pulseboard/components/layout/DashboardShell.tsx)<br>[`TopNav.tsx`](file:///c:/pulseboard/components/layout/TopNav.tsx) | ✅ **Complete** |
+| **2.2** | **Personalized Feed** | Multi-source feed unifying news, cinema, and social posts with instant tab filtering. | [`page.tsx`](file:///c:/pulseboard/app/page.tsx)<br>[`SortableFeed.tsx`](file:///c:/pulseboard/components/feed/SortableFeed.tsx) | ✅ **Complete** |
+| **2.3** | **Trending Section** | Right sidebar top 5 ranked breakdown + dedicated `/trending` hub with velocity metrics. | [`RightSidebar.tsx`](file:///c:/pulseboard/components/layout/RightSidebar.tsx)<br>[`trending/page.tsx`](file:///c:/pulseboard/app/trending/page.tsx) | ✅ **Complete** |
+| **2.4** | **Favorites Section** | One-click bookmarking on all cards, sidebar favorites list, and dedicated `/favorites` hub. | [`favorites/page.tsx`](file:///c:/pulseboard/app/favorites/page.tsx)<br>[`favoritesSlice.ts`](file:///c:/pulseboard/features/favorites/favoritesSlice.ts) | ✅ **Complete** |
+| **3.1** | **Search Bar** | Global search across titles, descriptions, categories, and author handles. | [`TopNav.tsx`](file:///c:/pulseboard/components/layout/TopNav.tsx) | ✅ **Complete** |
+| **3.2** | **Debounced Search** | 300ms debouncing hook to eliminate typing latency and redundant component re-renders. | [`useDebounce.ts`](file:///c:/pulseboard/hooks/useDebounce.ts) | ✅ **Complete** |
+| **4.1** | **Drag-and-Drop** | Reorder cards in feed with smooth visual drag handle and persistent position saving. | [`@dnd-kit/sortable`](file:///c:/pulseboard/components/feed/SortableFeed.tsx) | ✅ **Complete** |
+| **4.2** | **Dark Mode** | Dark/Light/System theme toggles using CSS custom properties and Tailwind CSS `.dark` tokens. | [`globals.css`](file:///c:/pulseboard/app/globals.css)<br>[`StoreProvider.tsx`](file:///c:/pulseboard/store/StoreProvider.tsx) | ✅ **Complete** |
+| **4.3** | **Animations & Micro-interactions** | Framer Motion transitions, card hover transforms, glowing waveform icon, and shimmer skeletons. | [`HeroBanner.tsx`](file:///c:/pulseboard/components/feed/HeroBanner.tsx)<br>[`SkeletonCard.tsx`](file:///c:/pulseboard/components/ui/SkeletonCard.tsx) | ✅ **Complete** |
+| **5.1** | **Redux Toolkit** | Centralized store with 3 modular slices (`dashboard`, `favorites`, `preferences`). | [`store/index.ts`](file:///c:/pulseboard/store/index.ts)<br>[`features/`](file:///c:/pulseboard/features/) | ✅ **Complete** |
+| **5.2** | **Async Logic / Cache** | RTK Query endpoints with tag invalidation (`Content`, `Trending`, `Status`) and deduplication. | [`services/apiSlice.ts`](file:///c:/pulseboard/services/apiSlice.ts) | ✅ **Complete** |
+| **5.3** | **LocalStorage Persistence** | Automatic serialization of preferences and favorites, rehydrated safely via `useSyncExternalStore`. | [`StoreProvider.tsx`](file:///c:/pulseboard/store/StoreProvider.tsx)<br>[`storage.ts`](file:///c:/pulseboard/lib/storage.ts) | ✅ **Complete** |
+| **6.1** | **Unit & Integration Tests** | 38 Vitest tests covering slices, hooks, storage utilities, and UI feedback states. | [`tests/unit/`](file:///c:/pulseboard/tests/unit/) | ✅ **Complete** |
+| **6.2** | **E2E Browser Tests** | 6 Playwright tests testing full user journeys in real Chromium browser. | [`tests/e2e/dashboard.spec.ts`](file:///c:/pulseboard/tests/e2e/dashboard.spec.ts) | ✅ **Complete** |
+| **7.1** | **Bonus: User Profile** | User avatar chip in header with dynamic greeting, plus upgrade modal tier showcase. | [`TopNav.tsx`](file:///c:/pulseboard/components/layout/TopNav.tsx)<br>[`Sidebar.tsx`](file:///c:/pulseboard/components/layout/Sidebar.tsx) | ✅ **Complete** |
+| **7.2** | **Bonus: Real-Time Polling** | Configurable background polling intervals (Off, 30s, 1m, 5m) configured in `/settings`. | [`settings/page.tsx`](file:///c:/pulseboard/app/settings/page.tsx) | ✅ **Complete** |
+| **7.3** | **Bonus: JSON Exporter** | One-click button in `/favorites` downloading all saved bookmarks as a timestamped JSON file. | [`favorites/page.tsx`](file:///c:/pulseboard/app/favorites/page.tsx) | ✅ **Complete** |
+| **7.4** | **Bonus: API Health Inspector** | Real-time diagnostic endpoint (`/api/status`) inspecting provider live vs. fallback status. | [`app/api/status/route.ts`](file:///c:/pulseboard/app/api/status/route.ts) | ✅ **Complete** |
 
 ---
 
-## 💡 Quick Engineering Walkthrough (The 2-Minute Pitch)
+## 🏗️ System Architecture & How It Works
 
-If an interviewer, technical lead, or evaluator asks you **"What is PulseBoard and how does it work under the hood?"**, here is the exact architectural summary:
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   PULSEBOARD ARCHITECTURE                               │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+                                             │
+               ┌─────────────────────────────┴─────────────────────────────┐
+               ▼                                                           ▼
+    ┌──────────────────────┐                                    ┌──────────────────────┐
+    │  CLIENT COMPONENTS   │                                    │  API ROUTE PROXIES   │
+    │  (Next.js App Router)│                                    │  (/api/* Handlers)   │
+    └──────────┬───────────┘                                    └──────────┬───────────┘
+               │                                                           │
+               ▼                                                           ▼
+    ┌──────────────────────┐            RTK Query Cache         ┌──────────────────────┐
+    │     REDUX STORE      │ ◄────────────────────────────────► │ EXTERNAL APIS /      │
+    │  - dashboardSlice    │        Tags: Content, Trending     │ CURATED FALLBACKS    │
+    │  - favoritesSlice    │                                    │ - TMDB v3 API        │
+    │  - preferencesSlice  │                                    │ - NewsAPI Provider   │
+    └──────────┬───────────┘                                    │ - PulseNet Social    │
+               │                                                └──────────────────────┘
+               ▼
+    ┌──────────────────────┐
+    │  STORAGE SUBSYSTEM   │
+    │  - localStorage      │
+    │  - useSyncExtStore   │
+    └──────────────────────┘
+```
 
-### The 30-Second Elevator Pitch
-> *"PulseBoard is a responsive, editorial SaaS dashboard built on Next.js 16 App Router and React 19. It aggregates heterogeneous content feeds—live TMDB movies, global news, and simulated developer community discussions—into a unified, typed data model. It features drag-and-drop card reordering using `@dnd-kit`, real-time debounced search, cross-session `localStorage` persistence with SSR hydration safety, and full offline degradation so the dashboard never breaks if external API credentials or networks fail."*
+### 1. Request & Data Lifecycle
+1. **Trigger**: The user interacts with the UI (e.g., switches feed to *"Movies"*, selects *"Technology"*, or types *"Drones"*).
+2. **RTK Query Hook**: Client component triggers an RTK Query hook (e.g., `useGetMoviesQuery({ category, search })`).
+3. **Internal Route Proxy**: Requests are routed through Next.js server route handlers (`/api/movies`, `/api/news`, `/api/social`).
+   - *Why this pattern?* Keeps secret API keys safe on the server, eliminates browser CORS restrictions, and performs schema normalization before client delivery.
+4. **Resilient Data Normalization**: Route handlers evaluate API keys (`TMDB_API_KEY`, `NEWS_API_KEY`). If valid, live data is retrieved; if credentials are missing or external APIs return errors (401, 429, 500), the handler automatically returns high-definition curated fallback datasets marked with `isMock: true`.
+5. **State Update & Re-render**: Normalized items populate the RTK Query normalized cache. UI updates smoothly with Framer Motion enter transitions.
+6. **Persistence Bridge**: Changes to bookmarks or preferences are serialized to `localStorage` via a Redux store subscriber. On subsequent visits, data rehydrates instantly using `useSyncExternalStore`.
 
 ---
 
-### How Data Flows End-to-End
-1. **User Action / Route Change**: A user filters a category, switches tabs (`All`, `News`, `Movies`, `Social`), or types a debounced search query.
-2. **RTK Query Hook**: The component triggers an RTK Query endpoint (`useGetMoviesQuery`, `useGetNewsQuery`, `useGetSocialQuery`).
-3. **Internal API Route Proxy**: The client does not call external APIs directly. Instead, requests hit Next.js route handlers (`/api/movies`, `/api/news`, `/api/social`). This keeps API keys secure on the server, avoids browser CORS issues, and handles rate limiting.
-4. **Data Normalization & Fallback**: The server checks for live API keys (`TMDB_API_KEY`, `NEWS_API_KEY`). If present, it fetches external data; if absent or if an external API fails, it smoothly degrades to curated, high-definition fallback datasets with an `isMock: true` origin flag.
-5. **Redux Store & UI Re-render**: Normalized items are cached in the RTK Query cache with tag invalidation. The UI re-renders smoothly with Framer Motion animations.
-6. **Local Persistence**: User interactions (favoriting items, drag-and-drop reordering, theme preferences) are dispatched to Redux and automatically persisted to `localStorage` via a store subscription bridge.
+### 2. Key Engineering Decisions & Rationale
 
----
-
-### 5 Key Technical Decisions & Why They Were Made
-
-| Decision | Why This Choice? | Alternative Rejected |
+| Architecture Choice | Technical Justification | Alternative Evaluated & Rejected |
 |---|---|---|
-| **RTK Query over `useEffect` + `fetch`** | Provides built-in request deduplication, cache normalization, polling intervals, and tag-based cache invalidation out-of-the-box with zero boilerplate. | Manual `fetch` (too error-prone, no caching) or React Query (would duplicate state library alongside Redux). |
-| **`@dnd-kit` over `react-beautiful-dnd`** | `@dnd-kit` supports modern React 19 and mobile pointer/touch events, has a modular bundle size, and does not depend on deprecated React lifecycle methods. | `react-beautiful-dnd` (unmaintained, issues with React 18/19 strict mode). |
-| **`useSyncExternalStore` for Hydration** | React 19 flags setting state synchronously in `useEffect` (`react-hooks/set-state-in-effect`). `useSyncExternalStore` is React's official, idiomatic API to detect client hydration without causing cascading re-renders. | `useEffect` with `setMounted(true)` (triggers cascading render lint errors). |
-| **Internal Server Route Proxies** | Keeps secrets (`TMDB_API_KEY`, `NEWS_API_KEY`) on the server, prevents CORS issues in browsers, and provides a single normalization boundary before data hits client components. | Direct client-side `fetch` (exposes API secrets to browser DevTools). |
-| **Tailwind CSS v4 with Midnight Tokens** | High-performance CSS compiling with zero runtime CSS-in-JS overhead, using CSS variables for instant `.dark` theme toggling without page reload. | Emotion / Styled Components (runtime overhead, incompatible with Next.js Server Components). |
+| **RTK Query over `useEffect` + `fetch`** | Provides out-of-the-box request deduplication, cache normalization, polling intervals, and tag-based invalidation with zero boilerplate. | Manual `useEffect` (prone to race conditions, no caching) or React Query (would duplicate state libraries alongside Redux). |
+| **`@dnd-kit` over `react-beautiful-dnd`** | Modern, modular library fully compatible with React 19 and mobile pointer/touch events. Uses CSS transforms for smooth 60fps reordering. | `react-beautiful-dnd` (abandoned maintenance, incompatible with React 18/19 strict mode). |
+| **`useSyncExternalStore` for Hydration** | React 19's officially endorsed API for detecting client hydration. Eliminates SSR hydration mismatches without triggering `react-hooks/set-state-in-effect` lint warnings. | Setting state inside `useEffect` (causes cascading re-renders and React 19 strict linter errors). |
+| **Server-Side API Proxies** | Keeps private API keys off client browsers, isolates third-party API changes, and provides a centralized fallback mechanism. | Direct client-side `fetch` (exposes private API keys in browser network tab). |
+| **Tailwind CSS v4 with Midnight Tokens** | Zero runtime CSS-in-JS overhead. Uses CSS custom properties for instant `.dark` theme toggling without page reloads or style recalculation lag. | Styled Components / Emotion (runtime overhead, incompatible with Next.js Server Components). |
 
 ---
 
-## 🌟 Architectural Overview & How Things Work
+## 🔌 API Architecture & Proxy Layer
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          PulseBoard Architecture                       │
-└────────────────────────────────────────────────────────────────────────┘
-                                    │
-          ┌─────────────────────────┴─────────────────────────┐
-          ▼                                                   ▼
-┌───────────────────┐                               ┌───────────────────┐
-│ Client Components │                               │ Route Handlers    │
-│  (UI / Dashboard) │                               │  (/api/* Proxies) │
-└─────────┬─────────┘                               └─────────┬─────────┘
-          │                                                   │
-          ▼                                                   ▼
-┌───────────────────┐       RTK Query Cache         ┌───────────────────┐
-│ Redux Store       │ ◄───────────────────────────► │ External APIs /   │
-│ - dashboard       │    Tags: Content, Trending    │ Curated Fallbacks │
-│ - favorites       │                               │ - TMDB Movies     │
-│ - preferences     │                               │ - News Wire       │
-└─────────┬─────────┘                               │ - PulseNet Social │
-          │                                         └───────────────────┘
-          ▼
-┌───────────────────┐
-│ Storage Subsystem │
-│ - localStorage    │
-│ - useSyncExtStore │
-└───────────────────┘
-```
+All internal route handlers return standard HTTP `NextResponse` JSON payloads adhering to the unified schema:
 
-### Next.js App Router & Hybrid Rendering
-PulseBoard leverages Next.js 16's App Router with React 19. Pages under `app/` are organized into clean route segments:
-- **`app/page.tsx`**: Main 3-column personalized dashboard feed.
-- **`app/trending/page.tsx`**: Trending velocity hub with category filters.
-- **`app/favorites/page.tsx`**: Saved bookmarks manager with search and JSON export.
-- **`app/settings/page.tsx`**: Customization controls, theme selector, and API status inspector.
-- **`app/api/*/route.ts`**: Edge-ready server route handlers serving normalized JSON payloads.
+### Endpoint Catalog
 
-Client components are isolated with `"use client"` directives at the component boundary, allowing SSR HTML generation for faster First Contentful Paint (FCP) while running interactive state on the client.
-
-### State Management Pipeline (Redux Toolkit)
-Application state is centralized in Redux Toolkit across three modular slices:
-1. **`dashboardSlice`** ([features/dashboard/dashboardSlice.ts](file:///c:/pulseboard/features/dashboard/dashboardSlice.ts)):
-   - Tracks active feed tabs (`all`, `news`, `movies`, `social`), category selection (`Technology`, `Business`, `Entertainment`, etc.), search queries, active sorting modes (`latest`, `popular`, `rating`), sidebar collapsed state, and notification popovers.
-2. **`favoritesSlice`** ([features/favorites/favoritesSlice.ts](file:///c:/pulseboard/features/favorites/favoritesSlice.ts)):
-   - Stores saved items array, active favorite filters, and local search queries within bookmarks.
-3. **`preferencesSlice`** ([features/preferences/preferencesSlice.ts](file:///c:/pulseboard/features/preferences/preferencesSlice.ts)):
-   - Manages user theme (`dark`, `light`, `system`), preferred topic categories, feed layout view (`grid` vs. `compact`), custom hashtags, and card reorder ID arrays.
-
-### RTK Query Caching & Revalidation
-Data fetching is managed by **RTK Query** in [services/apiSlice.ts](file:///c:/pulseboard/services/apiSlice.ts):
-- **Base Query**: Queries internal API route handlers (`/api/news`, `/api/movies`, `/api/social`, `/api/trending`, `/api/status`).
-- **Tag Invalidation**: Uses `Content`, `Trending`, and `Status` tags to guarantee that feed switches and manual re-fetches pull fresh data without redundant HTTP requests.
-- **Deduplication & Polling**: Configured with request deduplication and configurable polling intervals set in `/settings`.
-
-### Hydration & Persistence Lifecycle
-To prevent React 19 SSR hydration mismatches, PulseBoard uses a hydration bridge in [store/StoreProvider.tsx](file:///c:/pulseboard/store/StoreProvider.tsx):
-1. **`useSyncExternalStore`**: Detects client-side hydration status without triggering cascading render warnings or `react-hooks/set-state-in-effect` errors.
-2. **Persistence Subscriber**: Subscribes to the Redux store; whenever `state.preferences` or `state.favorites` changes, the updated state is automatically serialized to `localStorage` under keys `pulseboard_preferences_v1` and `pulseboard_favorites_v1`.
-3. **Rehydration**: On initial mount, saved favorites and preferences are loaded into Redux before components render their stored states.
-
-### Drag-and-Drop Reordering Engine
-Card reordering is powered by `@dnd-kit/core` and `@dnd-kit/sortable`:
-- **Collision Detection**: Uses `closestCenter` collision detection algorithm for intuitive card movement.
-- **Sensors**: Activates via `PointerSensor` (requiring a 5px drag distance to avoid accidental drags when clicking bookmark buttons) and `KeyboardSensor`.
-- **Persistence**: When `onDragEnd` fires, the new order of card IDs is dispatched to `preferencesSlice.setFeedOrder()` and automatically stored in `localStorage`, maintaining custom arrangements across browser sessions.
-
-### Theme Engine & Dynamic Styling
-- Dark mode is implemented via Tailwind CSS class strategy (`.dark`).
-- The theme engine supports **Dark** (Midnight Blue `#080c15`), **Light** (Clean Slate `#f8fafc`), and **System** (listening to `prefers-color-scheme`).
-- Theme changes apply immediately to `document.documentElement` without page reload or layout shift.
-
----
-
-## 🔌 API Architecture & Endpoints
-
-PulseBoard features an internal API proxy layer that harmonizes distinct external APIs into a unified JSON format while providing resilient offline fallbacks.
-
-### API Endpoint Reference
-
-| Endpoint | Method | Parameters | Description |
+| Endpoint | Method | Query Parameters | Description |
 |---|---|---|---|
-| `/api/movies` | `GET` | `category`, `search`, `page` | Proxies The Movie Database (TMDB v3) discover & search endpoints, or returns curated cinema data if credentials are absent. |
-| `/api/news` | `GET` | `category`, `search`, `page` | Returns world, technology, business, and science news with full metadata and source branding. |
-| `/api/social` | `GET` | `hashtag`, `search`, `page` | Serves community developer discussions, engineering tips, and tech commentary. |
-| `/api/trending` | `GET` | None | Returns velocity-ranked viral stories, box office leaders, and breakout topics. |
-| `/api/status` | `GET` | None | Reports real-time connectivity status and live vs. mock provider status for all integrations. |
+| `/api/movies` | `GET` | `category`, `search`, `page` | Proxies TMDB v3 movie discovery & search, or serves curated cinema data when unauthenticated. |
+| `/api/news` | `GET` | `category`, `search`, `page` | Aggregates world, tech, and business news with source attribution and read times. |
+| `/api/social` | `GET` | `hashtag`, `search`, `page` | Serves community developer posts, engagement statistics, and author profile details. |
+| `/api/trending` | `GET` | None | Returns top trending items ranked by engagement and view velocity metrics. |
+| `/api/status` | `GET` | None | Diagnostics endpoint reporting real-time connectivity for TMDB, News, and Social providers. |
 
 ---
 
-### Live API Proxy vs. Graceful Mock Fallbacks
-
-```
-Incoming Request -> /api/movies
-         │
-         ├──► TMDB_API_KEY Present?
-         │         ├── YES: Query https://api.themoviedb.org/3/discover/movie
-         │         │         │
-         │         │         ├── Success: Normalize & Return (isMock: false)
-         │         │         └── Failure (401/429/Network): Degrade to Curated Cinema Data (isMock: true)
-         │         │
-         │         └── NO: Return Curated Cinema Data immediately (isMock: true)
-         ▼
-Clean 200 OK Response (UI never crashes)
-```
-
-- **TMDB Integration** ([lib/tmdb.ts](file:///c:/pulseboard/lib/tmdb.ts)):
-  - Validates `TMDB_API_KEY` on the server.
-  - Normalizes TMDB movie objects (posters, vote averages, release dates, synopsis) into the unified content format.
-  - In offline mode or when credentials are missing, falls back to cinema data (*Dune: Part Two*, *Oppenheimer*, *The Batman*, *Spider-Man*, *Inside Out 2*).
-- **News API Integration** ([lib/news.ts](file:///c:/pulseboard/lib/news.ts)):
-  - Validates `NEWS_API_KEY`.
-  - Normalizes news wire stories (BBC, Reuters, TechCrunch, National Geographic) with source badges and publication timestamps.
-- **Provider Status Inspector** ([app/api/status/route.ts](file:///c:/pulseboard/app/api/status/route.ts)):
-  - Supplies the Settings page with real-time feedback on which APIs are active vs. operating in mock fallback mode.
-
----
-
-### Content Normalization Schema
-
-All data sources are harmonized into the `UnifiedContentItem` TypeScript interface:
+### Unified Content Model (`UnifiedContentItem`)
+All content is normalized on the server into a single TypeScript contract:
 
 ```typescript
 export interface UnifiedContentItem {
@@ -235,148 +160,157 @@ export interface UnifiedContentItem {
     comments?: number;
     shares?: number;
   };
-  rating?: number;          // Movie ratings (e.g. 8.8)
-  releaseDate?: string;     // Cinema release date
-  readTime?: string;        // News article read time (e.g. "4 min read")
-  hashtags?: string[];      // Social hashtags (e.g. ["#webdev", "#react"])
+  rating?: number;          // Movie ratings (e.g., 8.8/10)
+  releaseDate?: string;     // Movie release year
+  readTime?: string;        // News article read time (e.g., "4 min read")
+  hashtags?: string[];      // Social hashtags (e.g., ["#webdev", "#react"])
   trendingRank?: number;    // Trending rank (1–5)
-  trendingVelocity?: string;// Growth metric (e.g. "+480% view surge")
+  trendingVelocity?: string;// Growth metric (e.g., "+480% view surge")
   isMock?: boolean;         // Origin transparency
 }
 ```
 
 ---
 
-## ✨ Comprehensive Feature Guide
+## ✨ Application Features & Tour
 
-### Three-Column SaaS Layout
-1. **Left Sidebar** ([components/layout/Sidebar.tsx](file:///c:/pulseboard/components/layout/Sidebar.tsx)):
-   - Neon waveform brand logo with pulse animation.
-   - Primary navigation (`Home`, `For You`, `Trending`, `Favorites`, `Search`, `Settings`).
-   - Categorized topic filters with icons (Technology, Business, Sports, Entertainment, Health, Science, Travel, Food).
-   - Sidebar collapse button (toggles width between 240px and 80px).
-   - "Upgrade Your Experience" premium card with interactive modal.
-2. **Center Feed**:
-   - Hero banner, interactive feed controls, sortable cards grid, and recommended cinema strip.
-3. **Right Sidebar** ([components/layout/RightSidebar.tsx](file:///c:/pulseboard/components/layout/RightSidebar.tsx)):
-   - **Trending Now 🔥**: Top 5 breakout items with ranked numerical badges and category tags.
-   - **Your Favorites**: Compact view of bookmarked items with one-click removal.
-   - **Create Your Perfect Feed**: Direct shortcut widget to the preferences manager.
+### 1. Personalized Feed (`/`)
+- **Hero Banner**: High-contrast mountain sunrise landscape with call-to-action button and inspirational quote card.
+- **Recommended Movies**: Cinema poster strip highlighting ratings and one-click bookmarking.
+- **Interactive Controls**: Filter by content type (`All`, `News`, `Movies`, `Social`), sort by `latest`, `popular`, or `rating`, and toggle between `Grid View` and `Compact View`.
+- **Drag-and-Drop Reordering**: Dedicated drag handles enable effortless rearranging with persisted ordering.
 
-### Editorial Hero Banner & Cinema Strip
-- **Hero Banner** ([components/feed/HeroBanner.tsx](file:///c:/pulseboard/components/feed/HeroBanner.tsx)):
-  - Cinematic mountain panorama backdrop with high-contrast gradient overlays.
-  - Headline: *"Your Personalized Content Dashboard"*.
-  - *"Explore Your Feed"* action button with smooth scroll targeting.
-  - Inspirational quote callout card.
-- **Recommended Movies** ([components/feed/RecommendedMovies.tsx](file:///c:/pulseboard/components/feed/RecommendedMovies.tsx)):
-  - Cinema poster strip displaying ratings (e.g. `8.8`), release years, and instant bookmarking hearts.
-
-### Unified Content Cards (News, Movies, Social)
-The `ContentCard` component ([components/cards/ContentCard.tsx](file:///c:/pulseboard/components/cards/ContentCard.tsx)) dynamically formats cards based on content type:
-- **News Cards**: High-definition thumbnail, source badge (e.g., BBC News, Reuters), read time estimation, publication timestamp, and external article link.
-- **Movie Cards**: Poster art, TMDB rating badge with star icon, synopsis, release year, and bookmark action.
-- **Social Cards**: Author avatar, name and handle (`@alex_codes`), interactive like counter with red heart toggle, and clickable hashtag pills.
-- **Drag Grip**: Dedicated handle for `@dnd-kit` reordering in `SortableContentCard.tsx`.
-
-### Debounced Real-Time Search
-- Located in the sticky `TopNav` ([components/layout/TopNav.tsx](file:///c:/pulseboard/components/layout/TopNav.tsx)).
-- Powered by `useDebounce` with a **300ms delay** to prevent excessive re-renders while typing.
-- Searches simultaneously across card titles, descriptions, categories, and author names.
-- Displays an interactive **Clear (X)** button when text is present.
-
-### Favorites & Bookmarks Suite (`/favorites`)
-- Dedicated manager at [app/favorites/page.tsx](file:///c:/pulseboard/app/favorites/page.tsx).
-- Filter saved items by `All`, `News`, `Movies`, or `Social`.
-- Instant search filter within saved bookmarks.
-- **Export to JSON**: One-click export button generating a timestamped `pulseboard-favorites.json` download.
-- Full localStorage synchronization: cards added anywhere on the dashboard appear instantly in the Favorites hub.
-
-### Trending Hub (`/trending`)
-- Dedicated velocity analytics page at [app/trending/page.tsx](file:///c:/pulseboard/app/trending/page.tsx).
+### 2. Trending Hub (`/trending`)
 - **Velocity Metrics Bar**:
   - `#1 Breakout Topic`: Quantum Processors (+480% view surge).
-  - `Box Office Leader`: Dune: Part Two (8.8 Rating).
+  - `Box Office Leader`: Dune: Part Two (8.8 Critics Choice).
   - `Viral Community Post`: dnd-kit Performance (+1.2k likes).
-- Filter trending items by content type.
+- Filter trending content by category.
 
-### User Preferences & Diagnostics (`/settings`)
-Located at [app/settings/page.tsx](file:///c:/pulseboard/app/settings/page.tsx):
-- **Theme Selection**: Toggle between Dark, Light, and System modes.
-- **Feed Layout**: Switch between `Grid View` (multi-column visual cards) and `Compact View` (information-dense rows).
-- **Auto-Refresh Interval**: Configure automatic background polling (Off, 30s, 1m, 5m).
-- **Topic Interests**: Checkbox controls enabling or disabling specific categories.
-- **Custom Hashtags**: Add or remove preferred community topics (e.g., `#webdev`, `#react`, `#ai`).
-- **API Diagnostics**: Live status indicators showing connection status for TMDB and NewsAPI.
-- **Factory Reset**: One-click reset clearing all custom preferences and local storage back to defaults.
+### 3. Favorites Manager (`/favorites`)
+- Dedicated bookmarks dashboard.
+- Filter bookmarks by type and search within saved items.
+- **Export to JSON**: One-click download of all bookmarked content to a timestamped `pulseboard-favorites.json` file.
 
-### Notification Center & Toast System
-- Bell icon in `TopNav` displays real-time unread badge counter.
-- Interactive popover listing notifications with timestamp, read status, and "Mark all as read" control.
-- Global toast provider ([components/ui/Toast.tsx](file:///c:/pulseboard/components/ui/Toast.tsx)) delivering micro-feedback when items are bookmarked or settings are updated.
-
-### Responsive Mobile Drawer
-- On viewports < 768px, the desktop sidebar automatically hides.
-- TopNav reveals a hamburger button that opens the slide-out `MobileNav` drawer ([components/layout/MobileNav.tsx](file:///c:/pulseboard/components/layout/MobileNav.tsx)) with a smooth backdrop blur and full category access.
+### 4. Settings & Preferences (`/settings`)
+- **Theme Selection**: Dark (Midnight `#080c15`), Light (Slate `#f8fafc`), or System preference.
+- **Feed Customization**: Toggle category interests, manage custom hashtags, and choose layout modes.
+- **Auto-Refresh**: Configure background polling frequency (Off, 30s, 1m, 5m).
+- **API Status Inspector**: Real-time diagnostic cards showing connection state for external providers.
+- **Factory Reset**: Instant one-click wipe of custom storage back to clean defaults.
 
 ---
 
-## 🧪 Testing & Verification Matrix
+## 🧪 Testing & Quality Assurance Matrix
 
-PulseBoard has been audited against strict type checking, linting, unit tests, end-to-end integration journeys, and production compilation.
+Every test suite was executed against the production build with 100% pass rates:
 
-| Suite | Command | Total Tests | Status | Execution Time |
+| Test Suite | Command | Coverage / Target | Result | Duration |
 |---|---|---|---|---|
-| **TypeScript Typecheck** | `npm run typecheck` | Entire codebase | ✅ Passed (0 errors) | ~8s |
-| **ESLint (React 19 / Next.js)** | `npm run lint` | Entire codebase | ✅ Passed (0 warnings) | ~12s |
-| **Vitest Unit Suite** | `npm test` | 38 tests (8 test files) | ✅ Passed (38/38) | ~38s |
-| **Playwright E2E Suite** | `npm run test:e2e` | 6 browser journeys | ✅ Passed (6/6) | ~38s |
-| **Production Build** | `npm run build` | 12 routes generated | ✅ Passed (Exit Code 0) | ~5s |
+| **TypeScript Typecheck** | `npm run typecheck` | Strict type checking across entire codebase | ✅ **0 Errors** | ~8s |
+| **ESLint (React 19)** | `npm run lint` | Code quality, React 19 hook safety | ✅ **0 Warnings** | ~12s |
+| **Vitest Unit Suite** | `npm test` | Reducers, custom hooks, storage, UI states | ✅ **38/38 Passed** | ~38s |
+| **Playwright E2E Suite** | `npm run test:e2e` | Automated browser tests in real Chromium | ✅ **6/6 Passed** | ~38s |
+| **Production Build** | `npm run build` | Turbopack compilation of 12 routes | ✅ **Exit Code 0** | ~5s |
 
-### Run Unit & Integration Tests (Vitest)
-```bash
-npm test
-```
-*Executes 38 unit tests verifying `preferencesSlice`, `favoritesSlice`, `dashboardSlice`, `useDebounce`, `storage`, `ContentCard`, `EmptyState`, and `ErrorState`.*
-
-### Run End-to-End Tests (Playwright)
-```bash
-npm run test:e2e
-```
-*Automated browser testing covering 6 end-to-end user journeys:*
-1. **Feed & Cards**: Full dashboard load, hero banner typography, and dynamic card feed rendering.
-2. **Category & Tab Switching**: Real-time filtering across `All`, `News`, `Movies`, and `Social` tabs.
-3. **Debounced Search**: 300ms debounced keystroke searching and clear action.
-4. **Favorites Persistence**: Adding cards to favorites, navigating to `/favorites`, and verifying localStorage rehydration.
-5. **Trending Hub**: Navigation via sidebar to `/trending` and breakout topic indicator verification.
-6. **Theme Customization**: Light/dark mode switching and DOM class synchronization.
+### E2E Test Scenarios Tested (`dashboard.spec.ts`)
+1. **Initial Load & Cards Rendering**: Validates hero banner typography, tab buttons, and dynamic card feed rendering.
+2. **Category & Tab Switching**: Verifies real-time filtering between `News`, `Movies`, and `Social` tabs.
+3. **Debounced Search**: Tests 300ms debounced input filtering and Clear button functionality.
+4. **Favorites Persistence**: Adds cards to favorites, navigates to `/favorites`, and asserts localStorage rehydration.
+5. **Trending Hub**: Validates sidebar navigation to `/trending` and breakout topic indicator presence.
+6. **Theme Customization**: Toggles dark/light themes and verifies root HTML class synchronization.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technologies |
+| Category | Technology |
 |---|---|
 | **Framework** | Next.js 16 (App Router) with React 19 & Turbopack |
-| **Language** | TypeScript (Strict mode, zero `any` types) |
+| **Language** | TypeScript 5.0 (Strict mode, zero `any` types) |
 | **Styling** | Tailwind CSS v4 with custom dark mode variants |
 | **State Management** | Redux Toolkit (`@reduxjs/toolkit`, `react-redux`) |
 | **Data Fetching & Cache** | RTK Query with tag-based caching and invalidation |
 | **Drag & Drop** | `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` |
 | **Animations** | Framer Motion & CSS micro-interactions |
 | **Icons** | Lucide React |
-| **Unit & Component Testing**| Vitest, `@testing-library/react`, `@testing-library/jest-dom` |
-| **End-to-End Testing** | Playwright (Headless Chromium) |
+| **Unit Testing** | Vitest, `@testing-library/react`, `@testing-library/jest-dom` |
+| **E2E Testing** | Playwright (Headless Chromium) |
 
 ---
 
-## 🚀 Setup & Installation Guide
+## 📂 Project Structure
+
+```
+pulseboard/
+├── app/
+│   ├── api/
+│   │   ├── movies/route.ts      # TMDB movie recommendations proxy & mock fallback
+│   │   ├── news/route.ts        # News wire feed with category & query filtering
+│   │   ├── social/route.ts      # PulseNet social feed with hashtag support
+│   │   ├── status/route.ts      # Provider configuration & diagnostics status
+│   │   └── trending/route.ts    # Cross-platform trending engine
+│   ├── favorites/page.tsx       # Saved bookmarks manager & JSON exporter
+│   ├── settings/page.tsx        # Preferences, theme, and API diagnostics
+│   ├── trending/page.tsx        # Dedicated breakout trending hub
+│   ├── globals.css              # Midnight dark theme design tokens & gradients
+│   ├── layout.tsx               # Root layout with Store & Toast providers
+│   └── page.tsx                 # 3-column Personalized Feed dashboard
+├── components/
+│   ├── cards/
+│   │   ├── ContentCard.tsx      # Unified card for news, cinema, and social posts
+│   │   └── SortableContentCard.tsx # dnd-kit sortable card wrapper
+│   ├── feed/
+│   │   ├── HeroBanner.tsx       # Editorial landscape hero banner
+│   │   ├── RecommendedMovies.tsx # Horizontal cinema recommendations strip
+│   │   └── SortableFeed.tsx     # Drag-and-drop sortable container
+│   ├── layout/
+│   │   ├── DashboardShell.tsx   # Three-column responsive layout orchestrator
+│   │   ├── MobileNav.tsx        # Sliding drawer and bottom mobile bar
+│   │   ├── RightSidebar.tsx     # Trending now, favorites, & settings CTA
+│   │   ├── Sidebar.tsx          # Collapsible sidebar with categories & upgrade card
+│   │   └── TopNav.tsx           # Search, Sun/Moon switch, and profile chip
+│   └── ui/
+│       ├── Badge.tsx            # Colored topic and status badge capsules
+│       ├── EmptyState.tsx       # Filter reset and empty state illustration
+│       ├── ErrorState.tsx       # Network retry and error presentation
+│       ├── SkeletonCard.tsx     # Shimmer skeleton loader
+│       └── Toast.tsx            # Animated notifications feedback
+├── features/
+│   ├── dashboard/dashboardSlice.ts # Active filters, tabs, search query, notifications
+│   ├── favorites/favoritesSlice.ts # Saved bookmark actions and filter state
+│   └── preferences/preferencesSlice.ts # Categories, hashtags, theme, order persistence
+├── lib/
+│   ├── mockData.ts              # Authentic curated datasets for all feeds
+│   ├── news.ts                  # News fetching service
+│   ├── social.ts                # Social feed filter engine
+│   ├── storage.ts               # SSR-safe localStorage persistence utilities
+│   ├── tmdb.ts                  # TMDB client, normalization, and mock fallback
+│   └── utils.ts                 # Class merging (cn) and format helpers
+├── services/
+│   └── apiSlice.ts              # RTK Query API endpoints and caching tags
+├── store/
+│   ├── index.ts                 # Redux store configuration and typed hooks
+│   └── StoreProvider.tsx        # Client-side hydration and theme synchronization
+├── tests/
+│   ├── e2e/
+│   │   └── dashboard.spec.ts    # Playwright E2E tests for critical user journeys
+│   ├── unit/                    # Vitest unit tests for slices, hooks, & components
+│   └── test-utils.tsx           # Custom test render wrapper
+├── vitest.config.mts            # Vitest configuration with JSDOM
+└── playwright.config.ts         # Playwright test harness configuration
+```
+
+---
+
+## 🚀 Getting Started & Local Setup
 
 ### Prerequisites
 - Node.js 18.18+ or 20+ (Node.js 24 supported)
 - npm 9+
 
-### 1. Clone & Install Dependencies
+### 1. Clone & Install
 ```bash
 git clone https://github.com/Chandru9842/pulseboard.git
 cd pulseboard
@@ -389,27 +323,42 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Edit `.env.local` to add your optional API keys:
+Edit `.env.local` with your optional keys:
 ```env
-# Optional: The Movie Database API
+# Optional: The Movie Database API (v3 key)
 TMDB_API_KEY=your_tmdb_api_key_here
-TMDB_READ_ACCESS_TOKEN=your_v4_token_here
+TMDB_READ_ACCESS_TOKEN=your_v4_bearer_token_here
 
-# Optional: NewsAPI
+# Optional: NewsAPI Key
 NEWS_API_KEY=your_news_api_key_here
 
 # Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
-> **Note**: If left blank, PulseBoard operates seamlessly in rich mock mode. All features—including movie recommendations, ratings, news, categories, and search—remain 100% operational.
+> **Offline Simulation Note**: If left blank, PulseBoard operates seamlessly in rich mock fallback mode. Every feature—including movie recommendations, ratings, news, categories, and search—remains 100% operational.
 
-### 3. Start Development Server
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 4. Build for Production
+### 4. Execute Test Suites
+```bash
+# Run unit & component tests
+npm test
+
+# Run end-to-end browser tests
+npm run test:e2e
+
+# Run TypeScript type check
+npm run typecheck
+
+# Run ESLint
+npm run lint
+```
+
+### 5. Build for Production
 ```bash
 npm run build
 npm start
@@ -419,10 +368,22 @@ npm start
 
 ## 🚢 Vercel Deployment Guide
 
-PulseBoard is designed for zero-configuration deployment to [Vercel](https://vercel.com):
+PulseBoard is optimized for one-click deployment to [Vercel](https://vercel.com):
 
-1. Push your repository to GitHub (`git push origin main`).
+1. Push your repository to GitHub:
+   ```bash
+   git push origin main
+   ```
 2. Navigate to [vercel.com/new](https://vercel.com/new).
-3. Import your **`Chandru9842/pulseboard`** repository.
-4. *(Optional)* Add your environment variables (`TMDB_API_KEY`, `NEWS_API_KEY`) under the **Environment Variables** section.
-5. Click **Deploy**. Vercel will automatically detect Next.js and build the application.
+3. Import the **`Chandru9842/pulseboard`** repository.
+4. *(Optional)* Add any environment variables (`TMDB_API_KEY`, `NEWS_API_KEY`) under the **Environment Variables** tab.
+5. Click **Deploy**. Vercel will automatically build and deploy your application.
+
+---
+
+<div align="center">
+
+**PulseBoard** — Built for the Software Development Engineer (SDE) Intern Assignment  
+*Crafted with Next.js 16, React 19, TypeScript, and Redux Toolkit*
+
+</div>
