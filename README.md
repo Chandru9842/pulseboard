@@ -8,7 +8,11 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 
 ## 📑 Table of Contents
 
-1. [🌟 Architectural Overview & How Things Work](#-architectural-overview--how-things-work)
+1. [💡 Quick Engineering Walkthrough (The 2-Minute Pitch)](#-quick-engineering-walkthrough-the-2-minute-pitch)
+   - [The 30-Second Elevator Pitch](#the-30-second-elevator-pitch)
+   - [How Data Flows End-to-End](#how-data-flows-end-to-end)
+   - [5 Key Technical Decisions & Why They Were Made](#5-key-technical-decisions--why-they-were-made)
+2. [🌟 Architectural Overview & How Things Work](#-architectural-overview--how-things-work)
    - [Next.js App Router & Hybrid Rendering](#nextjs-app-router--hybrid-rendering)
    - [State Management Pipeline (Redux Toolkit)](#state-management-pipeline-redux-toolkit)
    - [RTK Query Caching & Revalidation](#rtk-query-caching--revalidation)
@@ -33,6 +37,37 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 5. [🛠️ Technology Stack](#️-technology-stack)
 6. [🚀 Setup & Installation Guide](#-setup--installation-guide)
 7. [🚢 Vercel Deployment Guide](#-vercel-deployment-guide)
+
+---
+
+## 💡 Quick Engineering Walkthrough (The 2-Minute Pitch)
+
+If an interviewer, technical lead, or evaluator asks you **"What is PulseBoard and how does it work under the hood?"**, here is the exact architectural summary:
+
+### The 30-Second Elevator Pitch
+> *"PulseBoard is a responsive, editorial SaaS dashboard built on Next.js 16 App Router and React 19. It aggregates heterogeneous content feeds—live TMDB movies, global news, and simulated developer community discussions—into a unified, typed data model. It features drag-and-drop card reordering using `@dnd-kit`, real-time debounced search, cross-session `localStorage` persistence with SSR hydration safety, and full offline degradation so the dashboard never breaks if external API credentials or networks fail."*
+
+---
+
+### How Data Flows End-to-End
+1. **User Action / Route Change**: A user filters a category, switches tabs (`All`, `News`, `Movies`, `Social`), or types a debounced search query.
+2. **RTK Query Hook**: The component triggers an RTK Query endpoint (`useGetMoviesQuery`, `useGetNewsQuery`, `useGetSocialQuery`).
+3. **Internal API Route Proxy**: The client does not call external APIs directly. Instead, requests hit Next.js route handlers (`/api/movies`, `/api/news`, `/api/social`). This keeps API keys secure on the server, avoids browser CORS issues, and handles rate limiting.
+4. **Data Normalization & Fallback**: The server checks for live API keys (`TMDB_API_KEY`, `NEWS_API_KEY`). If present, it fetches external data; if absent or if an external API fails, it smoothly degrades to curated, high-definition fallback datasets with an `isMock: true` origin flag.
+5. **Redux Store & UI Re-render**: Normalized items are cached in the RTK Query cache with tag invalidation. The UI re-renders smoothly with Framer Motion animations.
+6. **Local Persistence**: User interactions (favoriting items, drag-and-drop reordering, theme preferences) are dispatched to Redux and automatically persisted to `localStorage` via a store subscription bridge.
+
+---
+
+### 5 Key Technical Decisions & Why They Were Made
+
+| Decision | Why This Choice? | Alternative Rejected |
+|---|---|---|
+| **RTK Query over `useEffect` + `fetch`** | Provides built-in request deduplication, cache normalization, polling intervals, and tag-based cache invalidation out-of-the-box with zero boilerplate. | Manual `fetch` (too error-prone, no caching) or React Query (would duplicate state library alongside Redux). |
+| **`@dnd-kit` over `react-beautiful-dnd`** | `@dnd-kit` supports modern React 19 and mobile pointer/touch events, has a modular bundle size, and does not depend on deprecated React lifecycle methods. | `react-beautiful-dnd` (unmaintained, issues with React 18/19 strict mode). |
+| **`useSyncExternalStore` for Hydration** | React 19 flags setting state synchronously in `useEffect` (`react-hooks/set-state-in-effect`). `useSyncExternalStore` is React's official, idiomatic API to detect client hydration without causing cascading re-renders. | `useEffect` with `setMounted(true)` (triggers cascading render lint errors). |
+| **Internal Server Route Proxies** | Keeps secrets (`TMDB_API_KEY`, `NEWS_API_KEY`) on the server, prevents CORS issues in browsers, and provides a single normalization boundary before data hits client components. | Direct client-side `fetch` (exposes API secrets to browser DevTools). |
+| **Tailwind CSS v4 with Midnight Tokens** | High-performance CSS compiling with zero runtime CSS-in-JS overhead, using CSS variables for instant `.dark` theme toggling without page reload. | Emotion / Styled Components (runtime overhead, incompatible with Next.js Server Components). |
 
 ---
 
