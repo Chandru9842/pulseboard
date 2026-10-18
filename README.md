@@ -8,22 +8,23 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 
 ## 📑 Table of Contents
 
-1. [💡 Quick Engineering Walkthrough (The 2-Minute Pitch)](#-quick-engineering-walkthrough-the-2-minute-pitch)
+1. [📋 SDE Intern Assignment Requirements Compliance](#-sde-intern-assignment-requirements-compliance)
+2. [💡 Quick Engineering Walkthrough (The 2-Minute Pitch)](#-quick-engineering-walkthrough-the-2-minute-pitch)
    - [The 30-Second Elevator Pitch](#the-30-second-elevator-pitch)
    - [How Data Flows End-to-End](#how-data-flows-end-to-end)
    - [5 Key Technical Decisions & Why They Were Made](#5-key-technical-decisions--why-they-were-made)
-2. [🌟 Architectural Overview & How Things Work](#-architectural-overview--how-things-work)
+3. [🌟 Architectural Overview & How Things Work](#-architectural-overview--how-things-work)
    - [Next.js App Router & Hybrid Rendering](#nextjs-app-router--hybrid-rendering)
    - [State Management Pipeline (Redux Toolkit)](#state-management-pipeline-redux-toolkit)
    - [RTK Query Caching & Revalidation](#rtk-query-caching--revalidation)
    - [Hydration & Persistence Lifecycle](#hydration--persistence-lifecycle)
    - [Drag-and-Drop Reordering Engine](#drag-and-drop-reordering-engine)
    - [Theme Engine & Dynamic Styling](#theme-engine--dynamic-styling)
-2. [🔌 API Architecture & Endpoints](#-api-architecture--endpoints)
+4. [🔌 API Architecture & Endpoints](#-api-architecture--endpoints)
    - [API Endpoint Reference](#api-endpoint-reference)
    - [Live API Proxy vs. Graceful Mock Fallbacks](#live-api-proxy-vs-graceful-mock-fallbacks)
    - [Content Normalization Schema](#content-normalization-schema)
-3. [✨ Comprehensive Feature Guide](#-comprehensive-feature-guide)
+5. [✨ Comprehensive Feature Guide](#-comprehensive-feature-guide)
    - [Three-Column SaaS Layout](#three-column-saas-layout)
    - [Editorial Hero Banner & Cinema Strip](#editorial-hero-banner--cinema-strip)
    - [Unified Content Cards (News, Movies, Social)](#unified-content-cards-news-movies-social)
@@ -33,10 +34,29 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
    - [User Preferences & Diagnostics (`/settings`)](#user-preferences--diagnostics-settings)
    - [Notification Center & Toast System](#notification-center--toast-system)
    - [Responsive Mobile Drawer](#responsive-mobile-drawer)
-4. [🧪 Testing & Verification Matrix](#-testing--verification-matrix)
-5. [🛠️ Technology Stack](#️-technology-stack)
-6. [🚀 Setup & Installation Guide](#-setup--installation-guide)
-7. [🚢 Vercel Deployment Guide](#-vercel-deployment-guide)
+6. [🧪 Testing & Verification Matrix](#-testing--verification-matrix)
+7. [🛠️ Technology Stack](#️-technology-stack)
+8. [🚀 Setup & Installation Guide](#-setup--installation-guide)
+9. [🚢 Vercel Deployment Guide](#-vercel-deployment-guide)
+
+---
+
+## 📋 SDE Intern Assignment Requirements Compliance
+
+| # | Requirement Category | Assignment Specification | Implementation in PulseBoard | Status |
+|---|---|---|---|---|
+| **1** | **Personalized Feed** | User preferences for categories (Technology, Sports, Finance, etc.) saved in local storage or Redux. | Configurable in `/settings` & sidebar topic pills; persisted to Redux + localStorage. | ✅ Complete |
+| **1** | **Multi-API Fetching** | Fetch from 2+ APIs: News API, Recommendations (TMDB / Spotify), and Social API (hashtags/profiles). | Built `/api/news`, `/api/movies` (TMDB), `/api/social` with live proxies + automatic mock fallbacks. | ✅ Complete |
+| **1** | **Interactive Cards** | Images, headlines, descriptions, CTA buttons ("Read More"), and pagination / infinite scrolling. | `ContentCard.tsx` with images, type badges, external links, and "Load More Content" pagination. | ✅ Complete |
+| **2** | **Dashboard Layout** | Responsive layout with navigation sidebar, top header, search bar, user settings, account info. | 3-column layout (`Sidebar.tsx`, `TopNav.tsx`, `RightSidebar.tsx`, `MobileNav.tsx`). | ✅ Complete |
+| **2** | **Feed Sections** | Unified Feed, Trending Section, and Favorites Section. | Unified SortableFeed, Trending Now 1–5 + `/trending`, and Favorites sidebar + `/favorites`. | ✅ Complete |
+| **3** | **Search Functionality** | Cross-category search bar with debounced input to optimize performance while typing. | Sticky search bar in `TopNav` using custom `useDebounce` hook (300ms delay) + instant clear button. | ✅ Complete |
+| **4** | **Drag-and-Drop** | Reorder cards in feed with smooth interaction. | `@dnd-kit/core` & `@dnd-kit/sortable` with custom grip handle, transform transitions, and saved order. | ✅ Complete |
+| **4** | **Dark Mode & Styling** | Dark mode toggle using CSS custom properties & Tailwind CSS. | Sun/moon toggle in TopNav + Settings segmented control using CSS variables and `.dark` class. | ✅ Complete |
+| **4** | **Animations** | Smooth transitions between sections, loading spinners, card hover effects. | Framer Motion transitions in HeroBanner, hover scaling, skeleton shimmer loaders, toast alerts. | ✅ Complete |
+| **5** | **State Management** | Redux Toolkit for global state, RTK Query / Thunks for async, localStorage persistence. | Redux Toolkit store with 3 modular slices, RTK Query cache invalidation, SSR-safe `useSyncExternalStore`. | ✅ Complete |
+| **6** | **Testing Suite** | Unit tests, Integration tests (edge cases, empty/error states), E2E tests (Playwright/Cypress). | 38 Vitest unit tests, FeedbackStates tests, 6 Playwright automated browser tests. | ✅ Complete |
+| **7** | **Bonus Features** | User profile/mock auth, real-time data polling, bookmark export, integration health. | User profile chip, auto-refresh interval selector, JSON exporter, `/api/status` diagnostics. | ✅ Complete |
 
 ---
 
